@@ -23,20 +23,45 @@ const connection = mysql.createConnection({
   port: 3306,
   user: "root",
   password: "password",
-  database: "pollster",
+  database: "colorpiano",
 });
 
-app.get("/api/getpoll/"+id, function (req, res) {
+// connection.query(
+//     "SELECT * FROM choices where pollid = 1",
+    
+//     function (err, data) {
+//       if (err) throw err;
+//       console.log(data);
+    
+//     }
+//   );
+app.get("/api/getAllPoll/", function (req, res) {
+  console.log("getting all/ poll");
+
+  connection.query(
+    "SELECT * FROM polls",
+   
+    function (err, data) {
+      if (err) throw err;
+      console.log(data);
+      res.json(data);
+    }
+  );
+});
+
+app.get("/api/getpoll/:id", function (req, res) {
   console.log("getting poll");
-  var id = req.id
-  connection.query("SELECT * FROM polls where id = ? ",[id], function (err, data) {
+  var id = req.params.id
+  console.log(id)
+  connection.query("SELECT * FROM polls where id = ?",[id], function (err, data) {
     if (err) throw err;
+    console.log(data)
     res.json(data);
   });
 });
-app.get("/api/getchoices/" + id, function (req, res) {
-  console.log("getting poll");
-  var id = req.id;
+app.get("/api/getchoices/:id", function (req, res) {
+  console.log("getting choices");
+  var id = req.params.id;
   connection.query(
     "SELECT * FROM choices where pollid = ? ",
     [id],
@@ -47,15 +72,17 @@ app.get("/api/getchoices/" + id, function (req, res) {
   );
 });
 
-app.get("/api/getvotes/" + id, function (req, res) {
-  console.log("getting poll");
-  var id = req.id;
+app.get("/api/getvotes/:id", function (req, res) {
+  console.log("getting votes");
+  var id = req.params.id;
   connection.query(
-    "SELECT count(choiceid)as count, choiceid FROM votes where  pollid = ? group by choiceid",
+    "SELECT count(choiceid) as count, choiceid FROM votes where  pollid = ? group by choiceid",
     [id],
     function (err, data) {
       if (err) throw err;
       res.json(data);
+      console.log(data);
+
     }
   );
 });
@@ -67,12 +94,13 @@ app.post("/api/poll", function (req, res) {
     [req.body.text],
     function (err, data) {
       if (err) throw err;
+      console.log(data);
       res.json(data);
     }
   );
 });
 
-app.post("/api/choices", function (req, res) {
+app.post("/api/choices/", function (req, res) {
   console.log(req.body);
   connection.query(
     "INSERT INTO choices (choicetext, pollid) values(?,?)",
@@ -84,7 +112,8 @@ app.post("/api/choices", function (req, res) {
   );
 });
 
-app.post("/api/votes", function (req, res) {
+app.post("/api/votes/", function (req, res) {
+  console.log("posting votes")
   console.log(req.body);
   connection.query(
     "INSERT INTO votes (choiceid, pollid) values(?,?)",
